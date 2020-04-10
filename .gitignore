@@ -1,1 +1,4 @@
 /target
+
+# rustfmt files
+*rustfmt
