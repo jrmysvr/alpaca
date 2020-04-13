@@ -5,6 +5,11 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 
+extern crate plotly;
+use plotly::common::{Mode, Title, Font};
+use plotly::{Plot, Scatter, Layout};
+use plotly::layout::{Axis, Legend};
+
 #[derive(Deserialize, Debug)]
 struct AccountInfo {
     // These are a subset of the available fields in the endpoint's response
@@ -96,7 +101,58 @@ fn get_bars(
     println!("Status: {}", response.status());
     println!("Headers: {:?}", response.headers());
 
-    println!("{:?}", response.json::<HashMap<String, Vec<Bar>>>());
+    let bar_map = response.json::<HashMap<String, Vec<Bar>>>().unwrap();
+    println!("{:?}", &bar_map);
+
+    /*
+    let symbol = bar_map.keys().next().unwrap();
+    let close_prices: Vec<f32> = match bar_map.get(symbol) {
+        Some(bars) => { bars.iter().map(|b| b.c).collect::<Vec<f32>>() },
+        _ => vec![]
+    };
+
+    let timestamps: Vec<u64> = match bar_map.get(symbol) {
+        Some(bars) => { bars.iter().map(|b| b.t).collect::<Vec<u64>>() },
+        _ => vec![]
+    };
+
+    assert_eq!(timestamps.len(), close_prices.len());
+
+    println!("Close Prices: {}\n\t{:?}", &symbol, &close_prices);
+
+    let close_prices_trace = Scatter::new(timestamps, close_prices)
+        .name(&symbol[..])
+        .mode(Mode::LinesMarkers);
+    */
+
+    let layout = Layout::new()
+        .title(Title::new("Closing Prices per timestamp"))
+        .legend(Legend::new().font(Font::new().size(16)))
+        .xaxis(Axis::new().title(Title::new("Timestamp")))
+        .yaxis(Axis::new().title(Title::new("Closing Price")));
+
+    let mut plot = Plot::new();
+    plot.set_layout(layout);
+    // plot.add_trace(close_prices_trace);
+    // plot.show();
+
+    for symbol in bar_map.keys() {
+        let prices: Vec<f32> = match bar_map.get(symbol) {
+            Some(bars) => bars.iter().map(|b| b.c).collect::<Vec<f32>>(),
+            _ => vec![]
+        };
+        let timestamps: Vec<u64> = match bar_map.get(symbol) {
+            Some(bars) => bars.iter().map(|b| b.t).collect::<Vec<u64>>(),
+            _ => vec![]
+        };
+        assert_eq!(prices.len(), timestamps.len());
+        let trace = Scatter::new(timestamps, prices)
+            .name(&symbol[..])
+            .mode(Mode::LinesMarkers);
+        plot.add_trace(trace);
+    }
+    plot.show_png(1024, 680);
+
     Ok(())
 }
 
