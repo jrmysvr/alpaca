@@ -2,3 +2,6 @@
 
 # rustfmt files
 *rustfmt
+
+# run app script
+run.sh

@@ -6,6 +6,8 @@ use plotly::common::{Mode, Title, Font};
 use plotly::{Plot, Scatter, Layout};
 use plotly::layout::{Axis, Legend};
 
+use crate::alpaca::user;
+
 #[derive(Deserialize, Debug)]
 struct AccountInfo {
     // These are a subset of the available fields in the endpoint's response
@@ -16,12 +18,12 @@ struct AccountInfo {
     portfolio_value: String,
 }
 
-pub fn view_account_info(key: &str, secret: &str) -> Result<(), reqwest::Error> {
+pub fn view_account_info(user: &user::User) -> Result<(), reqwest::Error> {
     let url = "https://paper-api.alpaca.markets/v2/account";
     let response = reqwest::blocking::Client::new()
         .get(url)
-        .header("APCA-API-KEY-ID", key)
-        .header("APCA-API-SECRET-KEY", secret)
+        .header("APCA-API-KEY-ID", user.get_key())
+        .header("APCA-API-SECRET-KEY", user.get_secret())
         .send()?;
 
     println!("Status: {}", response.status());
@@ -43,12 +45,12 @@ struct AssetInfo {
     tradable: bool,
 }
 
-pub fn view_asset_info(symbol: &str, key: &str, secret: &str) -> Result<(), reqwest::Error> {
+pub fn view_asset_info(user: &user::User, symbol: &str) -> Result<(), reqwest::Error> {
     let url = format!("https://paper-api.alpaca.markets/v2/assets/{}", symbol);
     let response = reqwest::blocking::Client::new()
         .get(&url)
-        .header("APCA-API-KEY-ID", key)
-        .header("APCA-API-SECRET-KEY", secret)
+        .header("APCA-API-KEY-ID", user.get_key())
+        .header("APCA-API-SECRET-KEY", user.get_secret())
         .send()?;
 
     println!("Status: {}", response.status());
@@ -76,10 +78,9 @@ struct Bar {
 }
 
 pub fn get_bars(
+    user: &user::User,
     timeframe: &str,
-    symbols: Vec<String>,
-    key: &str,
-    secret: &str,
+    symbols: Vec<String>
 ) -> Result<(), reqwest::Error> {
     println!("Getting Bars for {}", symbols.join(", "));
     let url = format!(
@@ -90,8 +91,8 @@ pub fn get_bars(
 
     let response = reqwest::blocking::Client::new()
         .get(&url)
-        .header("APCA-API-KEY-ID", key)
-        .header("APCA-API-SECRET-KEY", secret)
+        .header("APCA-API-KEY-ID", user.get_key())
+        .header("APCA-API-SECRET-KEY", user.get_secret())
         .send()?;
 
     println!("Status: {}", response.status());
