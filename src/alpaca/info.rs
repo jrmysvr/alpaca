@@ -153,3 +153,39 @@ pub fn get_bars(
     Ok(())
 }
 
+#[derive(Deserialize, Debug)]
+struct PositionInfo {
+  asset_id: String,
+  symbol: String,
+  exchange: String,
+  asset_class: String,
+  avg_entry_price: String,
+  qty: String,
+  side: String,
+  market_value: String,
+  cost_basis: String,
+  unrealized_pl: String,
+  unrealized_plpc: String,
+  unrealized_intraday_pl: String,
+  unrealized_intraday_plpc: String,
+  current_price: String,
+  lastday_price: String,
+  change_today: String,
+}
+
+pub fn get_current_positions(user: &user::User) -> Result<(), reqwest::Error> {
+    let url = "https://paper-api.alpaca.markets/v2/positions";
+    let response = reqwest::blocking::Client::new()
+        .get(url)
+        .header("APCA-API-KEY-ID", user.get_key())
+        .header("APCA-API-SECRET-KEY", user.get_secret())
+        .send()?;
+
+    println!("Status: {}", response.status());
+    println!("Headers: {:?}", response.headers());
+
+    println!("{:#?}", response.json::<Vec<PositionInfo>>().unwrap());
+
+    Ok(())
+}
+

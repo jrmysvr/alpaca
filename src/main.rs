@@ -37,6 +37,14 @@ fn trade_demo(user: &alpaca::user::User) {
     }
 }
 
+fn get_positions(user: &alpaca::user::User) {
+    println!("Getting current positions: ");
+    match alpaca::info::get_current_positions(user) {
+        Err(err) => println!("{}", err),
+        _ => {}
+    }
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let key = std::env::var("APCA_API_KEY_ID")?;
     // let secret = std::env::var("APCA_SECRET_API_KEY")?;
@@ -44,7 +52,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let user = alpaca::user::User::from_env()?;
 
-    info_demo(&user)?;
+    // info_demo(&user)?;
     // trade_demo(&user);
+    get_positions(&user);
     Ok(())
 }
