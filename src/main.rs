@@ -45,6 +45,14 @@ fn get_positions(user: &alpaca::user::User) {
     }
 }
 
+fn get_watchlist(user: &alpaca::user::User) {
+    println!("Getting Watchlist: ");
+    match alpaca::info::get_user_watchlist(user) {
+        Err(err) => println!("{}", err),
+        _ => {}
+    }
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let key = std::env::var("APCA_API_KEY_ID")?;
     // let secret = std::env::var("APCA_SECRET_API_KEY")?;
@@ -54,6 +62,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // info_demo(&user)?;
     // trade_demo(&user);
-    get_positions(&user);
+    // get_positions(&user);
+    get_watchlist(&user);
     Ok(())
 }

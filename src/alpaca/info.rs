@@ -189,3 +189,53 @@ pub fn get_current_positions(user: &user::User) -> Result<(), reqwest::Error> {
     Ok(())
 }
 
+#[derive(Deserialize, Debug)]
+struct WatchlistInfo {
+    id: String,
+    account_id: String,
+    name: String,
+    created_at: String,
+    updated_at: String,
+}
+
+#[derive(Deserialize, Debug)]
+struct WatchlistWithAssetInfo {
+    id: String,
+    account_id: String,
+    name: String,
+    assets: Vec<AssetInfo>,
+    created_at: String,
+    updated_at: String,
+}
+
+pub fn get_user_watchlist(user: &user::User) -> Result<(), reqwest::Error> {
+    let url = "https://paper-api.alpaca.markets/v2/watchlists";
+    let response = reqwest::blocking::Client::new()
+        .get(url)
+        .header("APCA-API-KEY-ID", user.get_key())
+        .header("APCA-API-SECRET-KEY", user.get_secret())
+        .send()?;
+
+    println!("Status: {}", response.status());
+    println!("Headers: {:?}", response.headers());
+
+    let watchlists = response.json::<Vec<WatchlistInfo>>()?;
+    let watchlist_id = &watchlists[0].id;
+
+    println!("Fetching Watchlist {}", &watchlist_id);
+
+    let watchlist_url = format!("{}/{}", url, watchlist_id);
+
+    let response = reqwest::blocking::Client::new()
+        .get(&watchlist_url)
+        .header("APCA-API-KEY-ID", user.get_key())
+        .header("APCA-API-SECRET-KEY", user.get_secret())
+        .send()?;
+
+    println!("Status: {}", response.status());
+    println!("Headers: {:?}", response.headers());
+
+    println!("{:#?}", response.json::<WatchlistWithAssetInfo>().unwrap());
+
+    Ok(())
+}
